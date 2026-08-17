@@ -1,0 +1,48 @@
+name: Monitor Fundos.NET
+
+on:
+  # Roda às 08h, 11h, 14h, 17h e 20h no horário de Brasília (UTC-3).
+  # O cron do GitHub Actions só entende UTC, então os horários abaixo
+  # (11, 14, 17, 20, 23) já são a conversão. O minuto 13 evita o
+  # horário cheio, quando o GitHub costuma ter mais fila e atrasar
+  # a execução agendada.
+  schedule:
+    - cron: "13 11,14,17,20,23 * * *"
+  # Permite disparar manualmente pela aba Actions, pra testar
+  workflow_dispatch:
+
+# Necessário pra que o workflow possa dar "git push" com o estado atualizado
+permissions:
+  contents: write
+
+jobs:
+  check-funds:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o código do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
+
+      - name: Instalar navegador do Playwright
+        run: playwright install --with-deps chromium
+
+      - name: Rodar o monitor
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python fnet_monitor.py
+
+      - name: Salvar o estado atualizado no repositório
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add fnet_state
+          git diff --staged --quiet || git commit -m "Atualiza estado do monitor [skip ci]"
+          git push
