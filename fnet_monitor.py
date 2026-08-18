@@ -69,7 +69,7 @@ FUNDOS = {
 
 CHECK_INTERVAL_SECONDS = 2 * 60 * 60  # usado só no modo --loop
 
-TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "8637115135:AAEtX34n5h5iTFbCtu1SPld_LfdKt18ZaO0")
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "8637115135:AAHdYtZTZ2hCL7R5kiLepU1QI8phBkJvqvA")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "224555976")
 # ----------------------------------------------------
 
