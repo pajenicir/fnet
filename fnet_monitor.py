@@ -170,12 +170,12 @@ def check_all_funds():
         browser.close()
 
     if resumo_alertas:
-        mensagem = "🔔 Novos documentos no Fundos.NET:\n\n" + "\n\n".join(resumo_alertas)
+        mensagem = "ANÁLISE GITHUB:🔔 Novos documentos no Fundos.NET:\n\n" + "\n\n".join(resumo_alertas)
         send_alert(mensagem)
 
     elif not erros:
         mensagem = (
-            "✅ Varredura concluída.\n\n"
+            "ANÁLISE GITHUB: ✅ Varredura concluída.\n\n"
             "Nenhuma alteração detectada no Fundos.NET."
         )
         send_alert(mensagem)
