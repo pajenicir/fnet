@@ -71,6 +71,7 @@ CHECK_INTERVAL_SECONDS = 2 * 60 * 60  # usado só no modo --loop
 
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "8637115135:AAHdYtZTZ2hCL7R5kiLepU1QI8phBkJvqvA")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "224555976")
+TELEGRAM_MAX_MESSAGE_LENGTH = 3900
 # ----------------------------------------------------
 
 STATE_DIR = "fnet_state"
@@ -91,7 +92,10 @@ def send_alert(message: str):
         return
     try:
         url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-        requests.post(url, data={"chat_id": TELEGRAM_CHAT_ID, "text": message}, timeout=10)
+        while message:
+            parte = message[:TELEGRAM_MAX_MESSAGE_LENGTH]
+            message = message[TELEGRAM_MAX_MESSAGE_LENGTH:]
+            requests.post(url, data={"chat_id": TELEGRAM_CHAT_ID, "text": parte}, timeout=10)
     except Exception as e:
         print(f"[erro] Falha ao enviar alerta pelo Telegram: {e}")
 
@@ -131,6 +135,8 @@ def check_all_funds():
         return
 
     resumo_alertas = []  # texto por fundo com documentos novos
+    sem_alteracoes = []
+    estados_iniciais = []
     erros = []
 
     with sync_playwright() as p:
@@ -149,6 +155,7 @@ def check_all_funds():
 
                 if previous is None:
                     save_state(cnpj, current)
+                    estados_iniciais.append(nome)
                     print(f"[{nome}] Estado inicial salvo com {len(current)} documento(s).")
                     continue
 
@@ -161,6 +168,7 @@ def check_all_funds():
                         linhas.append(f"  - {partes[0][:60]}" + (f" ({partes[1]})" if len(partes) > 1 else ""))
                     resumo_alertas.append(f"📄 {nome} — {len(new_entries)} novo(s):\n" + "\n".join(linhas))
                 else:
+                    sem_alteracoes.append(nome)
                     print(f"[{nome}] Nenhuma mudança.")
 
                 save_state(cnpj, current)
@@ -170,21 +178,27 @@ def check_all_funds():
 
         browser.close()
 
-    if resumo_alertas:
-        mensagem = "ANÁLISE GITHUB:🔔 Novos documentos no Fundos.NET:\n\n" + "\n\n".join(resumo_alertas)
-        send_alert(mensagem)
+    # O mesmo relatório é impresso no CMD e enviado ao Telegram.
+    secoes = ["ANALISE GITHUB CODEX: ✅ Varredura concluída."]
 
-    elif not erros:
-        mensagem = (
-            "ANÁLISE GITHUB: ✅ Varredura concluída.\n\n"
-            "Nenhuma alteração detectada no Fundos.NET."
+    if resumo_alertas:
+        secoes.append("[alteracoes]\n" + "\n\n".join(resumo_alertas))
+    else:
+        secoes.append("Nenhuma alteração detectada no Fundos.NET.")
+
+    if sem_alteracoes:
+        secoes.append("[sem alteracoes]\n - " + "\n - ".join(sem_alteracoes))
+
+    if estados_iniciais:
+        secoes.append(
+            "[estado inicial salvo]\n - "
+            + "\n - ".join(estados_iniciais)
         )
-        send_alert(mensagem)
 
     if erros:
-        print("\n[avisos]")
-        for e in erros:
-            print(f" - {e}")
+        secoes.append("[avisos]\n - " + "\n\n - ".join(erros))
+
+    send_alert("\n\n".join(secoes))
 
 
 if __name__ == "__main__":
