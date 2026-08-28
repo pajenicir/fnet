@@ -5,7 +5,7 @@ on:
   # O cron do GitHub Actions só entende UTC, então os horários abaixo
   # (11, 14, 17, 20, 23) já são a conversão. O minuto 13 evita o
   # horário cheio, quando o GitHub costuma ter mais fila e atrasar
-  # a execução agendada.
+  # a execução agendada..
   schedule:
     - cron: "13 11,14,17,20,23 * * *"
   # Permite disparar manualmente pela aba Actions, pra testar
@@ -46,3 +46,4 @@ jobs:
           git add fnet_state
           git diff --staged --quiet || git commit -m "Atualiza estado do monitor [skip ci]"
           git push
+
