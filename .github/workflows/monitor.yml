@@ -7,7 +7,7 @@ on:
   # horário cheio, quando o GitHub costuma ter mais fila e atrasar
   # a execução agendada..
   schedule:
-    - cron: "13 11,14,17,20,23 * * *"
+    - cron: "13 11,14,17,18,20,23 * * *"
   # Permite disparar manualmente pela aba Actions, pra testar
   workflow_dispatch:
 
