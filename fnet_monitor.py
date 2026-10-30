@@ -65,6 +65,8 @@ FUNDOS = {
     "Fundo TRXF11": "28548288000152",
     "Fundo PORD11": "17156502000109",
     "Fundo HGLG11": "11728688000147",
+    "Fundo RECR11": "28152272000126",
+    "Fundo TVRI11": "14410722000129",
 }
 
 CHECK_INTERVAL_SECONDS = 2 * 60 * 60  # usado só no modo --loop
